@@ -1,9 +1,9 @@
 ## Smart Tribune - Backend - Coding Test :
 
-Ideally use PHP8 & Symfony6 (but otherwise Kotlin) and a relational database (mariadb/postgre).
-**Unit Tests** are mandatory. 
-Provide a documentation / readme file to explain how to run the project.
-Source code should be versioned within a git repository.
+Ideally use PHP8 & Symfony6 (but otherwise Kotlin) and a relational database (mariadb/postgre).  
+**Unit Tests** are mandatory.  
+Provide a documentation / readme file to explain how to run the project.  
+Source code should be versioned within a git repository.  
 
 #### Introduction 
 
@@ -33,7 +33,7 @@ Status value is restricted to "draft" or "published"
 ##### Step 2:
 
 1. Update existing Q&A to change the value of the title and the status
-2. Listen to changes on the question and populate **asynchronously** a new entity HistoricQuestion with those changes
+2. Listen to changes on the question and populate ***asynchronously*** a new entity HistoricQuestion with those changes
 
 ##### Step 3:
 
