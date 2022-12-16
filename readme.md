@@ -23,7 +23,7 @@ Based on the following JSON payload as Question & Answer document
 
 ##### Step 1:
 
-Create an API to validate a Q&A and store into a database with following extra fields : createdAt, updatedAt 
+Create an API to validate a Q&A and store into a database with following extra fields : createdAt, updatedAt  
 Do not use ApiPlatform for this test.
 
 Constraints : 
