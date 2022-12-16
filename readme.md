@@ -3,7 +3,7 @@
 Ideally use PHP8 & Symfony6 (but otherwise Kotlin) and a relational database (mariadb/postgre).  
 **Unit Tests** are mandatory.  
 Provide a documentation / readme file to explain how to run the project.  
-Source code should be versioned within a git repository.  
+Source code should be versioned within a git repository.
 
 #### Introduction 
 
@@ -24,6 +24,7 @@ Based on the following JSON payload as Question & Answer document
 ##### Step 1:
 
 Create an API to validate a Q&A and store into a database with following extra fields : createdAt, updatedAt 
+Do not use ApiPlatform for this test.
 
 Constraints : 
 Answers.channel value is restricted to "faq" or "bot"
