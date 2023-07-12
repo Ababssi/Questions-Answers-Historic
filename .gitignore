@@ -1,0 +1,26 @@
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
+
+###> symfony/phpunit-bridge ###
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
+
+/vendor/
+/bin/
+/var/
+/public/bundles/
+/public/build/
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/.env
+###< symfony/framework-bundle ###
+
+# Système d'exploitation
+.DS_Store
+

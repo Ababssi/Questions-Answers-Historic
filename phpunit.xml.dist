@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.2/phpunit.xsd" backupGlobals="false" colors="true" bootstrap="vendor/autoload.php">
+  <coverage/>
+  <php>
+    <ini name="error_reporting" value="-1"/>
+    <env name="KERNEL_CLASS" value="App\Kernel"/>
+    <server name="APP_ENV" value="test"/>
+    <server name="DATABASE_URL" value="postgresql://symfony:ChangeMe@database:5432/app?serverVersion=13&amp;charset=utf8"/>
+    <server name="MESSENGER_TRANSPORT_DSN" value="doctrine://default"/>
+    <env name="DAMA_DOCTRINE_TEST_BUNDLE_ENABLE" value="true"/>
+  </php>
+  <testsuites>
+    <testsuite name="Project Test Suite">
+      <directory>tests/units</directory>
+    </testsuite>
+  </testsuites>
+  <source>
+    <include>
+      <directory>src</directory>
+    </include>
+  </source>
+</phpunit>
