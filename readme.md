@@ -110,3 +110,8 @@ Status value is restricted to "draft" or "published"
 2. Database : postgresql
 3. Docker
 4. Tests : phpunit
+
+## Structure Database
+![Capture d’écran 2023-07-12 à 17 35 07](https://github.com/smart-tribune/backend-test-hiring-Ababssi/assets/84496529/d25ffc8b-964c-486b-827f-02e75b61b310)
+
+
