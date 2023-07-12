@@ -50,6 +50,8 @@ Status value is restricted to "draft" or "published"
 
 ## This is the command to build and up the project : *make launch*
 
+## This is the command to perform a composer install : *make install*
+
 ## This is the command to execute tests : *make test*
 
 ## Available API routes with Payload examples:
