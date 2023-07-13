@@ -15,6 +15,8 @@ RUN curl -sSk https://getcomposer.org/installer | php -- --disable-tls && \
 
 COPY . /var/www/
 
+RUN mkdir -p /var/www/exportFiles && chmod -R 777 /var/www/exportFiles
+
 COPY ./apache.conf /etc/apache2/sites-available/000-default.conf
 
 WORKDIR /var/www/
