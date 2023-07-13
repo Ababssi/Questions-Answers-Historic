@@ -4,7 +4,6 @@
 ###< phpunit/phpunit ###
 
 /vendor/
-/bin/
 /var/
 # Système d'exploitation
 .DS_Store
