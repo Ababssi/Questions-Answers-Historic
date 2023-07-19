@@ -56,7 +56,7 @@ class EntityToCsvTest extends WebTestCase
             ['title' => 'Question 4', 'status' => 'published', 'promoted' => 'false']
         ];
 
-        $result = $this->exportService->formatContentToCsv(Questions::class);
+        $result = $this->exportService->formatContent(Questions::class, 'csv');
 
         $this->assertEquals($result['file'], 'Questions.csv');
 
@@ -103,7 +103,7 @@ class EntityToCsvTest extends WebTestCase
             ['channel' => 'channel2', 'body' => 'body2']
         ];
 
-        $result = $this->exportService->formatContentToCsv(Answers::class);
+        $result = $this->exportService->formatContent(Answers::class, 'csv');
 
         $this->assertEquals($result['file'], 'Answers.csv');
 
@@ -148,7 +148,7 @@ class EntityToCsvTest extends WebTestCase
             ['title' => 'Historic Question 2', 'status' => 'published']
         ];
 
-        $result = $this->exportService->formatContentToCsv(HistoricQuestion::class);
+        $result = $this->exportService->formatContent(HistoricQuestion::class, 'csv');
 
         $this->assertEquals($result['file'], 'HistoricQuestion.csv');
 

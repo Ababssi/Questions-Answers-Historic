@@ -53,7 +53,7 @@ class QuestionTest extends WebTestCase
                     'promoted' => true,
                 ],
                 400,
-                ['error' => 'Missing parameters']
+                ['errors' => ['Title should not be blank']]
             ],
             [
                 [
@@ -61,7 +61,7 @@ class QuestionTest extends WebTestCase
                     'promoted' => true,
                 ],
                 400,
-                ['error' => 'Missing parameters']
+                ['errors' => ['Status should not be blank']]
             ],
             [
                 [
@@ -69,7 +69,7 @@ class QuestionTest extends WebTestCase
                     'status' => 'draft',
                 ],
                 400,
-                ['error' => 'Missing parameters']
+                ['errors' => ['Promoted should not be blank']]
             ],
             [
                 [
@@ -78,7 +78,7 @@ class QuestionTest extends WebTestCase
                     'promoted' => true,
                 ],
                 400,
-                ['errors' => "Object(App\\Entity\\Questions).status:\n    The value you selected is not a valid choice. (code 8e179f1b-97aa-4560-a02f-2a8b42e49df7)\n"]
+                ['errors' => ['The value you selected is not a valid choice.']]
             ],
         ];
     }

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Answers;
 use App\Repository\AnswersRepository;
 use App\Repository\QuestionsRepository;
+use App\Services\ExportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,6 +23,7 @@ class AnswersController extends AbstractController
         private readonly ValidatorInterface $validator,
         private readonly QuestionsRepository $questionsRepository,
         private readonly SerializerInterface $serializer,
+        private readonly ExportService              $exportServices,
     ) {
     }
 
@@ -109,7 +111,7 @@ class AnswersController extends AbstractController
     #[Route(path: '/answers/export', name: 'exportAnswers', methods: ['GET'])]
     public function exportAnswers(): JsonResponse
     {
-        return new JsonResponse($this->exportServices->formatContentToCsv('App\Entity\Answers'), Response::HTTP_OK);
+        return new JsonResponse($this->exportServices->formatContent('App\Entity\Answers', 'csv'), Response::HTTP_OK);
     }
 
 }

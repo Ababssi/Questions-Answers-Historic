@@ -56,7 +56,7 @@ class Answers
         $this->updatedAt = new DateTimeImmutable('now');
     }
 
-    public function id(): ?int
+    public function id(): int
     {
         return $this->id;
     }
@@ -87,7 +87,6 @@ class Answers
     public function setBody(string $body): void
     {
         $this->body = $body;
-        $this->updatedAt = new \DateTimeImmutable('now');
     }
 
     /**

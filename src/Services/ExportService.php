@@ -5,40 +5,24 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use InvalidArgumentException;
+use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 
 final readonly class ExportService
 {
     private const QUANTITY = 3;
+    public const AVAILABLE_FORMATS = ['csv', 'json', 'xml'];
+    private string $currentFormat;
     public function __construct(
         private SerializerInterface $serializer,
         private EntityManagerInterface $em,
     ) {
     }
 
-    /**
-    public function contentToCsv(string $className): array
+    public function formatContent(string $className, string $format): array
     {
-        $csvLine[] = $this->headerEntity($className);
-        $allContent = $this->em->getRepository($className)->findAll();
-        foreach ($allContent as $instance) {
-            $csvLine[] = $this->entityToCsv($instance);
-        }
-        return $csvLine;
-
-        $fp = fopen($className.'.csv', 'w');
-        foreach ($csvLine as $fields) {
-            fputcsv($fp, $fields);
-        }
-        fclose($fp);
-        return file_get_contents() ;
-    }
-    **/
-
-    public function formatContentToCsv(string $className): array
-    {
+        $this->validateAndSetFormat($format);
         $arrContent[] = $this->normalizeHeaderEntity($className);
 
         $repository = $this->em->getRepository($className);
@@ -51,55 +35,63 @@ final readonly class ExportService
                 ->setMaxResults(self::QUANTITY)
                 ->getQuery();
 
-            $paginator = new Paginator($query);
-
-            foreach ($paginator as $instance) {
+            $result = $query->getResult();
+            foreach ($result as $instance) {
                 $arrContent[] = $this->normalizeValuesEntity($instance);
             }
-
-            if (count($paginator->getIterator()) < self::QUANTITY) {
+            if(count($result) < self::QUANTITY) {
                 break;
             }
+
             $this->em->clear();
 
             ++$page;
         }
 
-        $fileName = $this->ArrayContentToCsvFile($arrContent, $className);
+        $fileName = $this->ArrayContentToFile($arrContent, $className);
 
         return ['file' => $fileName, 'content' => $arrContent];
+
     }
 
 
-    public function normalizeValuesEntity(Object $object): array
+    private function normalizeValuesEntity(Object $object): array
     {
-        $arrayEntity = $this->serializer->normalize($object, 'csv', ['groups' => 'export']);
+        $arrayEntity = $this->serializer->normalize($object, null, ['groups' => 'export']);
         return array_values($arrayEntity);
     }
 
-    public function normalizeHeaderEntity(string $className): array
+    private function normalizeHeaderEntity(string $className): array
     {
         if(!class_exists($className)) {
-            throw new InvalidArgumentException($className.' do not exist');
+            throw new \LogicException(sprintf('The class %s does not exist', $className));
         }
         return $this->em->getClassMetadata($className)->getFieldNames();
     }
 
-    public function ArrayContentToCsvFile(array $arrayContent, string $className): string
+    private function ArrayContentToFile(array $arrayContent, string $className): string
     {
         $classFileName = explode('\\', $className)[2];
-        $fileName = '/var/www/exportFiles/'.$classFileName.'.csv';
+        $fileName = '/var/www/exportFiles/'.$classFileName.'.'.$this->currentFormat;
+
+        $options = null;
+        if ($this->currentFormat === 'csv'){
+            $options = [CsvEncoder::NO_HEADERS_KEY => true];
+        }
 
         $fullStringContent = $this->replaceBoolValueToString($arrayContent);
-        $fp = fopen($fileName, 'w');
-        foreach ($fullStringContent as $fields) {
-            fputcsv($fp, $fields);
+        $contentFormatted = $this->serializer->encode($fullStringContent, $this->currentFormat,$options);
+
+        $bytesWritten = file_put_contents($fileName, $contentFormatted);
+        if ($bytesWritten === false) {
+            throw new \RuntimeException(sprintf('Could not write to file %s', $fileName));
         }
-        fclose($fp);
+
+        // file_put_contents($fileName, $contentFormatted);
         return explode('/', $fileName)[4] ;
     }
 
-    public function replaceBoolValueToString(array $arrayContent): array
+    private function replaceBoolValueToString(array $arrayContent): array
     {
         foreach ($arrayContent as &$line) {
             foreach ($line as $key => $value) {
@@ -109,6 +101,14 @@ final readonly class ExportService
             }
         }
         return $arrayContent;
+    }
+
+    private function validateAndSetFormat(string $format): void
+    {
+        if (!in_array($format, self::AVAILABLE_FORMATS)) {
+            throw new InvalidArgumentException('Format not supported');
+        }
+        $this->currentFormat = $format;
     }
 
 }

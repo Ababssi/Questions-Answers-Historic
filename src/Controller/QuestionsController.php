@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\DTO\QuestionDTO;
 use App\Entity\Questions;
+use App\Form\QuestionType;
 use App\Repository\QuestionsRepository;
 use App\Services\ExportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -53,26 +55,36 @@ class QuestionsController extends AbstractController
     public function createQuestion(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        if (!isset($data['title'], $data['status'], $data['promoted'])) {
-            return new JsonResponse(['error' => 'Missing parameters'], Response::HTTP_BAD_REQUEST);
-        }
-        if(!is_bool($data['promoted'])) {
-            return new JsonResponse(['error' => 'Promoted must be a boolean'], Response::HTTP_BAD_REQUEST);
-        }
-        $question = new Questions(
-            $data['title'],
-            $data['status'],
-            $data['promoted'],
-        );
+        /**
+         * if (!isset($data['title'], $data['status'], $data['promoted'])) {
+         * return new JsonResponse(['error' => 'Missing parameters'], Response::HTTP_BAD_REQUEST);
+         * }
+         * if(!is_bool($data['promoted'])) {
+         * return new JsonResponse(['error' => 'Promoted must be a boolean'], Response::HTTP_BAD_REQUEST);
+         * }
+         * $question = new Questions(
+         * $data['title'],
+         * $data['status'],
+         * $data['promoted'],
+         * );
+         **/
+        $questionDTO = new QuestionDTO;
+        $form = $this->createForm(QuestionType::class, $questionDTO);
+        $form->submit($data);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $question = new Questions($questionDTO->title, $questionDTO->status, $questionDTO->promoted);
+            $this->questionsRepository->save($question, true);
+            $json = $this->serializer->serialize($question, 'json', ['groups' => 'Questions:read']);
+            return new JsonResponse($json, Response::HTTP_OK, [], true);
+        } else {
+            $errors = [];
+            foreach ($form->getErrors(true, true) as $error) {
+                $errors[] = $error->getMessage();
+            }
 
-        $errors = $this->validator->validate($question);
-        if (count($errors) > 0) {
-            $errorsString = (string) $errors;
-            return new JsonResponse(['errors' => $errorsString], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+
         }
-        $this->questionsRepository->save($question, true);
-        $json = $this->serializer->serialize($question, 'json', ['groups' => 'Questions:read']);
-        return new JsonResponse($json, Response::HTTP_OK, [], true);
     }
 
     #[Route(path: '/questions/{id}', name: 'question_update', requirements: ['id' => '\d+'], methods: ['PUT'])]
@@ -121,13 +133,13 @@ class QuestionsController extends AbstractController
     #[Route(path: '/historicQuestion/export', name: 'historicQuestionExport', methods: ['GET'])]
     public function historicQuestionExport(): JsonResponse
     {
-        return new JsonResponse($this->exportServices->formatContentToCsv('App\Entity\HistoricQuestion'), Response::HTTP_OK);
+        return new JsonResponse($this->exportServices->formatContent('App\Entity\HistoricQuestion', 'csv'), Response::HTTP_OK);
     }
 
     #[Route(path: '/questions/export', name: 'exportQuestion', methods: ['GET'])]
     public function exportQuestion(): JsonResponse
     {
-        return new JsonResponse($this->exportServices->formatContentToCsv('App\Entity\Questions'), Response::HTTP_OK);
+        return new JsonResponse($this->exportServices->formatContent('App\Entity\Questions', 'csv'), Response::HTTP_OK);
     }
 
 }
