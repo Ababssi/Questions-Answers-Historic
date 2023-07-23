@@ -44,6 +44,4 @@ class QuestionDTO
     {
         return $this->status;
     }
-
-
 }

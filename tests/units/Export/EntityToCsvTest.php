@@ -65,17 +65,10 @@ class EntityToCsvTest extends WebTestCase
         $index = 0; // file line
         while ($index < 6) {
             $line = fgetcsv($file);
-            if ($index > 0) { // sauter len-tete
-                $question = [
-                    'title' => $line[1],
-                    'status' => $line[3],
-                    'promoted' => $line[2]
-                ];
-                $this->assertEquals($question, [
-                    'title' => $questionsCreated[$index]['title'],
-                    'status' => $questionsCreated[$index]['status'],
-                    'promoted' => $questionsCreated[$index]['promoted']
-                ]);
+            if ($index > 0) { // skip header
+                $this->assertEquals([$line[1], $line[3], $line[2]],
+                    [$questionsCreated[$index]['title'], $questionsCreated[$index]['status'], $questionsCreated[$index]['promoted']]
+                );
             }
             $index++;
         }
@@ -113,21 +106,16 @@ class EntityToCsvTest extends WebTestCase
         while ($index < 4) {
             $line = fgetcsv($file);
             if ($index > 0) { // skip header
-                $answer = [
-                    'channel' => $line[1],
-                    'body' => $line[2],
-                ];
-                $this->assertEquals($answer, [
-                    'channel' => $answersCreated[$index]['channel'],
-                    'body' => $answersCreated[$index]['body']
-                ]);
-
+                $this->assertEquals([$line[1], $line[2]],
+                    [$answersCreated[$index]['channel'], $answersCreated[$index]['body']]
+                );
             }
             $index++;
         }
         fclose($file);
         unlink($fileName);
     }
+
     public function testExportOnHistoricQuestions(): void
     {
         $question1 = new Questions('Question 1', 'draft', false);
@@ -158,20 +146,12 @@ class EntityToCsvTest extends WebTestCase
         while ($index < 4) {
             $line = fgetcsv($file);
             if ($index > 0) { // skip header
-                $historicQuestion = [
-                    'title' => $line[1],
-                    'status' => $line[2]
-                ];
-                $this->assertEquals($historicQuestion, [
-                    'title' => $historicQuestionsCreated[$index]['title'],
-                    'status' => $historicQuestionsCreated[$index]['status']
-                ]);
-
+                $this->assertEquals([$line[1], $line[2]], [$historicQuestionsCreated[$index]['title'], $historicQuestionsCreated[$index]['status']]
+                );
             }
             $index++;
         }
         fclose($file);
         unlink($fileName);
     }
-
 }
