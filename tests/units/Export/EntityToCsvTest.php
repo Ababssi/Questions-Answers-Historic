@@ -49,7 +49,6 @@ class EntityToCsvTest extends WebTestCase
         $this->entityManager->flush();
 
         $questionsCreated = [
-            [],
             ['title' => 'Question 1', 'status' => 'draft', 'promoted' => 'false'],
             ['title' => 'Question 2', 'status' => 'published', 'promoted' => 'true'],
             ['title' => 'Question 3', 'status' => 'draft', 'promoted' => 'false'],
@@ -67,7 +66,7 @@ class EntityToCsvTest extends WebTestCase
             $line = fgetcsv($file);
             if ($index > 0) { // skip header
                 $this->assertEquals([$line[1], $line[3], $line[2]],
-                    [$questionsCreated[$index]['title'], $questionsCreated[$index]['status'], $questionsCreated[$index]['promoted']]
+                    [$questionsCreated[$index-1]['title'], $questionsCreated[$index-1]['status'], $questionsCreated[$index-1]['promoted']]
                 );
             }
             $index++;

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\DTO\QuestionDTO;
+use App\Common\ErrorsAwareTrait;
+use App\Dto\QuestionDTO;
 use App\Entity\Questions;
 use App\Form\QuestionType;
 use App\Repository\QuestionsRepository;
@@ -17,6 +18,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class QuestionsController extends AbstractController
 {
+    use ErrorsAwareTrait;
     public function __construct(
         private readonly QuestionsRepository        $questionsRepository,
         private readonly SerializerInterface        $serializer,
@@ -45,42 +47,35 @@ class QuestionsController extends AbstractController
     public function createQuestion(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $questionDTO = new QuestionDTO;
-        $form = $this->createForm(QuestionType::class, $questionDTO);
-        $form->submit($data);
-        if ($form->isValid()) {
-            $question = new Questions($questionDTO->title, $questionDTO->status, $questionDTO->promoted);
-            $this->questionsRepository->save($question, true);
-            $json = $this->serializer->serialize($question, 'json', ['groups' => 'Questions:read']);
-            return new JsonResponse($json, Response::HTTP_OK, [], true);
+        $form = $this->createForm(QuestionType::class);
+        $form->submit($data, false);
+        if (!$form->isValid()) {
+            return self::returnJsonResponseErrors($form->getErrors(true, false));
         }
-        $errors = [];
-        foreach ($form->getErrors(true, true) as $error) {
-            $errors[] = $error->getMessage();
-        }
-        return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+        $questionDTO = $form->getData();
+        $question = new Questions($questionDTO->title, $questionDTO->status, $questionDTO->promoted);
+        $this->questionsRepository->save($question, true);
+        $json = $this->serializer->serialize($question, 'json', ['groups' => 'Questions:read']);
+        return new JsonResponse($json, Response::HTTP_CREATED, [], true);
     }
 
     #[Route(path: '/questions/{id}', name: 'question_update', requirements: ['id' => '\d+'], methods: ['PUT'])]
     public function updateQuestion(Questions $question, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $questionDTO = new QuestionDTO;
-        $form = $this->createForm((QuestionType::class), $questionDTO);
+        $form = $this->createForm((QuestionType::class));
         $form->submit($data);
-        if ($form->isValid()) {
-            $question->setTitle($questionDTO->title);
-            $question->setStatus($questionDTO->status);
-            $question->setPromoted($questionDTO->promoted);
-            $this->questionsRepository->save($question, true);
-            $json = $this->serializer->serialize($question, 'json', ['groups' => 'Questions:read']);
-            return new JsonResponse($json, Response::HTTP_OK, [], true);
+        if (!$form->isValid()) {
+            return self::returnJsonResponseErrors($form->getErrors(true, false));
         }
-        $errors = [];
-        foreach ($form->getErrors(true, true) as $error) {
-            $errors[] = $error->getMessage();
-        }
-        return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+        /** @var QuestionDTO $questionDTO */
+        $questionDTO = $form->getData();
+        $question->setTitle($questionDTO->title());
+        $question->setStatus($questionDTO->status());
+        $question->setPromoted($questionDTO->promoted());
+        $this->questionsRepository->save($question, true);
+        $json = $this->serializer->serialize($question, 'json', ['groups' => 'Questions:read']);
+        return new JsonResponse($json, Response::HTTP_OK, [], true);
     }
 
     #[Route(path: '/questions/{id}', name: 'question_delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]

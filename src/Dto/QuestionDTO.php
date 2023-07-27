@@ -2,22 +2,21 @@
 
 declare(strict_types=1);
 
-namespace App\DTO;
+namespace App\Dto;
 
 use App\Entity\Enum\QuestionStatus;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class QuestionDTO
 {
-    #[Assert\NotBlank(message: 'Title should not be blank')]
+    #[Assert\NotBlank(message: 'title should not be blank')]
     #[Assert\Length(max: 100)]
     public ?string $title;
 
-    #[Assert\NotBlank(message: 'Promoted should not be blank')]
-    #[Assert\Type(type: 'boolean')]
+    #[Assert\NotNull(message: 'promoted should not be null')]
     public ?bool $promoted;
 
-    #[Assert\NotBlank(message: 'Status should not be blank')]
+    #[Assert\NotBlank(message: 'status should not be blank')]
     #[Assert\Choice(callback: [QuestionStatus::class, 'availableStatusesValues'])]
     public ?string $status;
 

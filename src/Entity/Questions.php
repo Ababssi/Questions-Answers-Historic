@@ -21,18 +21,18 @@ class Questions
     #[Groups(['Questions:read','export'])]
     private int $id;
 
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'title should not be blank')]
     #[Assert\Length(max: 100)]
     #[ORM\Column(length: 100)]
     #[Groups(['Questions:read','export'])]
     private string $title;
 
-    #[Assert\Type(type: 'boolean')]
+    #[Assert\NotNull(message: 'promoted should not be null')]
     #[ORM\Column]
     #[Groups(['Questions:read','export'])]
-    private bool $promoted = false;
+    private bool $promoted;
 
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'status should not be blank')]
     #[Assert\Choice(callback: [QuestionStatus::class, 'availableStatusesValues'])]
     #[ORM\Column]
     #[Groups(['Questions:read','export'])]
@@ -55,8 +55,8 @@ class Questions
 
     public function __construct(
         string $title,
-        string $status = QuestionStatus::DRAFT->value,
-        bool $promoted = false
+        string $status,
+        bool $promoted,
     ) {
         $this->title = $title;
         $this->promoted = $promoted;

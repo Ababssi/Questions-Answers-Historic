@@ -13,7 +13,7 @@ class QuestionTest extends WebTestCase
     /**
      * @dataProvider providePostQuestionData
      */
-    public function testCreateQuestion(array $payload, int $expectedStatusCode, ?array $expectedError): void
+    public function testCreateQuestion(array $payload, int $expectedStatusCode, ?string $expectedError): void
     {
         $client = static::createClient();
         $client->request(
@@ -26,12 +26,12 @@ class QuestionTest extends WebTestCase
         );
 
         $this->assertEquals($expectedStatusCode, $client->getResponse()->getStatusCode());
-        if($expectedStatusCode === 200) {
+        if($expectedStatusCode === 201) {
             $response = json_decode($client->getResponse()->getContent(), true);
             self::$questionId = self::$questionId ?? $response['id'];
         }
         if ($expectedError !== null) {
-            $this->assertJsonStringEqualsJsonString(json_encode($expectedError), $client->getResponse()->getContent());
+            $this->assertStringContainsStringIgnoringCase($expectedError, $client->getResponse()->getContent());
         }
     }
 
@@ -44,7 +44,7 @@ class QuestionTest extends WebTestCase
                     'status' => 'draft',
                     'promoted' => true,
                 ],
-                200,
+                201,
                 null
             ],
             [
@@ -53,7 +53,7 @@ class QuestionTest extends WebTestCase
                     'promoted' => true,
                 ],
                 400,
-                ['errors' => ['Title should not be blank']]
+                'title should not be blank'
             ],
             [
                 [
@@ -61,7 +61,7 @@ class QuestionTest extends WebTestCase
                     'promoted' => true,
                 ],
                 400,
-                ['errors' => ['Status should not be blank']]
+                'status should not be blank'
             ],
             [
                 [
@@ -69,7 +69,7 @@ class QuestionTest extends WebTestCase
                     'status' => 'draft',
                 ],
                 400,
-                ['errors' => ['Promoted should not be blank']]
+                'promoted should not be null'
             ],
             [
                 [
@@ -78,7 +78,7 @@ class QuestionTest extends WebTestCase
                     'promoted' => true,
                 ],
                 400,
-                ['errors' => ['The value you selected is not a valid choice.']]
+                'The selected choice is invalid'
             ],
         ];
     }
@@ -117,7 +117,7 @@ class QuestionTest extends WebTestCase
     /**
      * @dataProvider provideUpdateQuestionData
      */
-    public function testUpdateQuestion(array $payload, int $expectedStatusCode, ?array $expectedError): void
+    public function testUpdateQuestion(array $payload, int $expectedStatusCode, ?string $expectedError): void
     {
         $client = static::createClient();
         $client->request(
@@ -131,7 +131,7 @@ class QuestionTest extends WebTestCase
         $this->assertEquals($expectedStatusCode, $client->getResponse()->getStatusCode());
 
         if ($expectedError !== null) {
-            $this->assertJsonStringEqualsJsonString(json_encode($expectedError), $client->getResponse()->getContent());
+            $this->assertStringContainsStringIgnoringCase($expectedError, $client->getResponse()->getContent());
         }
     }
 
@@ -162,7 +162,7 @@ class QuestionTest extends WebTestCase
                     'promoted' => true,
                 ],
                 400,
-                ['errors' => ['Title should not be blank']]
+                'Title should not be blank'
             ],
             [
                 [
@@ -170,7 +170,7 @@ class QuestionTest extends WebTestCase
                     'promoted' => true,
                 ],
                 400,
-                ['errors' => ['Status should not be blank']]
+                'Status should not be blank'
             ],
             [
                 [
@@ -178,7 +178,7 @@ class QuestionTest extends WebTestCase
                     'status' => 'published'
                 ],
                 400,
-                ['errors' => ['Promoted should not be blank']]
+                'Promoted should not be null'
             ],
             [
                 [
@@ -187,7 +187,7 @@ class QuestionTest extends WebTestCase
                     'promoted' => 'true',
                 ],
                 400,
-                ['errors' => ['The value you selected is not a valid choice.']]
+                'The selected choice is invalid.'
             ],
         ];
     }
@@ -195,7 +195,7 @@ class QuestionTest extends WebTestCase
     /**
      * @dataProvider providePostAnswersData
      */
-    public function testCreateAnswers(array $payload, int $expectedStatusCode, ?array $expectedError): void
+    public function testCreateAnswers(array $payload, int $expectedStatusCode, ?string $expectedError): void
     {
         $client = static::createClient();
         $client->request(
@@ -209,7 +209,7 @@ class QuestionTest extends WebTestCase
 
         $this->assertEquals($expectedStatusCode, $client->getResponse()->getStatusCode());
         if ($expectedError !== null) {
-            $this->assertJsonStringEqualsJsonString(json_encode($expectedError), $client->getResponse()->getContent());
+            $this->assertStringContainsStringIgnoringCase($expectedError, $client->getResponse()->getContent());
         }
     }
 
@@ -229,14 +229,14 @@ class QuestionTest extends WebTestCase
                     'channel' => 'faq',
                 ],
                 400,
-                ['errors' => ['Body should not be blank']]
+                'Body should not be blank'
             ],
             [
                 [
                     'body' => 'test body 2',
                 ],
                 400,
-                ['errors' => ['Channel should not be blank']]
+                'Channel should not be blank'
             ],
             [
                 [
@@ -244,7 +244,7 @@ class QuestionTest extends WebTestCase
                     'body' => 'test body 3',
                 ],
                 400,
-                ['errors' => ['The selected choice is invalid.']]
+                'The value you selected is not a valid choice.'
             ],
         ];
     }

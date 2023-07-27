@@ -2,26 +2,28 @@
 
 namespace App\Controller;
 
-use App\DTO\AnswerDTO;
+use App\Common\ErrorsAwareTrait;
+use App\CreateAnswer\CreateAnswerCommand;
 use App\Entity\Answers;
 use App\Entity\Questions;
-use App\Form\AnswerType;
 use App\Repository\AnswersRepository;
-use App\Repository\QuestionsRepository;
-use App\Services\ExportService;
+use App\UpdateAnswer\UpdateAnswerCommand;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class AnswersController extends AbstractController
 {
+    use ErrorsAwareTrait;
     private array $errors = [];
     public function __construct(
+        private readonly ValidatorInterface $validator,
+        private readonly MessageBusInterface $messageBus,
         private readonly AnswersRepository $answersRepository,
         private readonly SerializerInterface $serializer,
     ) {
@@ -38,41 +40,28 @@ class AnswersController extends AbstractController
     public function addAnswerToQuestion(Questions $question, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $answerDTO = new AnswerDTO;
-        $form = $this->createForm(AnswerType::class, $answerDTO);
-        $form->submit($data);
-        if ($form->isValid()) {
-            $answer = new Answers($question, $answerDTO->channel,$answerDTO->body);
-            $this->answersRepository->save($answer, true);
-            $json = $this->serializer->serialize($answer, 'json', ['groups' => 'Answers:read']);
-            return new JsonResponse($json, Response::HTTP_OK, [], true);
+        $createAnswer = new CreateAnswerCommand($question, $data['channel'], $data['body']);
+        $errors = $this->validator->validate($createAnswer);
+        if (count($errors) > 0) {
+            return self::returnJsonResponseErrors($errors);
         }
-        $errors = [];
-        foreach ($form->getErrors(true, true) as $error) {
-            $errors[] = $error->getMessage();
-        }
-        return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+        $createdAnswer = $this->messageBus->dispatch($createAnswer);
+        $json = $this->serializer->serialize($createdAnswer, 'json', ['groups' => 'Answers:read']);
+        return new JsonResponse($json, Response::HTTP_OK, [], true);
     }
 
     #[Route(path: '/answers/{id}', name: 'answer_update', requirements: ['id' => '\d+'], methods: ['PUT'])]
     public function updateAnswerToQuestion(Answers $answer, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
-        $AnswerDTO = new AnswerDTO;
-        $form = $this->createform(AnswerType::class, $AnswerDTO);
-        $form->submit($data);
-        if ($form->isValid()) {
-            $answer->setChannel($AnswerDTO->channel);
-            $answer->setBody($AnswerDTO->body);
-            $this->answersRepository->save($answer, true);
-            $json = $this->serializer->serialize($answer, 'json', ['groups' => 'Answers:read']);
-            return new JsonResponse($json, Response::HTTP_OK, [], true);
+        $UpdateAnswer = new UpdateAnswerCommand($answer, $data['channel'], $data['body']);
+        $errors = $this->validator->validate($UpdateAnswer);
+        if (count($errors) > 0) {
+            return self::returnJsonResponseErrors($errors);
         }
-        $errors = [];
-        foreach ($form->getErrors(true, true) as $error) {
-            $errors[] = $error->getMessage();
-        }
-        return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+        $this->messageBus->dispatch($UpdateAnswer);
+        $json = $this->serializer->serialize($answer, 'json', ['groups' => 'Answers:read']);
+        return new JsonResponse($json, Response::HTTP_OK, [], true);
     }
 
     #[Route(path: '/answers/{id}', name: 'answer_delete', requirements: ['id' => '\d+'], methods: ['DELETE'])]

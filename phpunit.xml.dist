@@ -7,7 +7,6 @@
     <server name="APP_ENV" value="test"/>
     <server name="DATABASE_URL" value="postgresql://symfony:ChangeMe@database:5432/app?serverVersion=13&amp;charset=utf8"/>
     <server name="MESSENGER_TRANSPORT_DSN" value="doctrine://default"/>
-    <env name="DAMA_DOCTRINE_TEST_BUNDLE_ENABLE" value="true"/>
   </php>
   <testsuites>
     <testsuite name="Project Test Suite">
