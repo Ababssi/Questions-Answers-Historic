@@ -4,17 +4,23 @@ declare(strict_types=1);
 
 namespace App\Tests\units\Export;
 
+use App\DataFixtures\AnswersFixtures;
+use App\DataFixtures\HistoricQuestionsFixtures;
+use App\DataFixtures\QuestionsFixtures;
 use App\Entity\Answers;
 use App\Entity\HistoricQuestion;
 use App\Entity\Questions;
 use App\Services\ExportService;
 use Doctrine\ORM\EntityManagerInterface;
+use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class EntityToCsvTest extends WebTestCase
 {
     private ExportService $exportService;
     private EntityManagerInterface $entityManager;
+    const PATH_DOCKER = '/var/www/exportFiles/';
+    const PATH_LOCAL = 'exportFiles/';
 
     protected function setUp(): void
     {
@@ -23,6 +29,7 @@ class EntityToCsvTest extends WebTestCase
         $container = self::getContainer();
         $this->exportService = $container->get(ExportService::class);
         $this->entityManager = $container->get(EntityManagerInterface::class);
+        $this->databaseTool = $container->get(DatabaseToolCollection::class)->get();
 
         $this->entityManager->getConnection()->setNestTransactionsWithSavepoints(true);
         $this->entityManager->getConnection()->beginTransaction();
@@ -37,36 +44,19 @@ class EntityToCsvTest extends WebTestCase
 
     public function testExportOnQuestions(): void
     {
-        $question1 = new Questions('Question 1', 'draft', false);
-        $question2 = new Questions('Question 2', 'published', true);
-        $question3 = new Questions('Question 3', 'draft', false);
-        $question4 = new Questions('Question 4', 'published', false);
-
-        $this->entityManager->persist($question1);
-        $this->entityManager->persist($question2);
-        $this->entityManager->persist($question3);
-        $this->entityManager->persist($question4);
-        $this->entityManager->flush();
-
-        $questionsCreated = [
-            ['title' => 'Question 1', 'status' => 'draft', 'promoted' => 'false'],
-            ['title' => 'Question 2', 'status' => 'published', 'promoted' => 'true'],
-            ['title' => 'Question 3', 'status' => 'draft', 'promoted' => 'false'],
-            ['title' => 'Question 4', 'status' => 'published', 'promoted' => 'false']
-        ];
-
+        $this->databaseTool->loadFixtures([QuestionsFixtures::class]);
         $result = $this->exportService->formatContent(Questions::class, 'csv');
 
         $this->assertEquals($result['file'], 'Questions.csv');
 
-        $fileName = '/var/www/exportFiles/Questions.csv';
+        $fileName = self::PATH_LOCAL.'Questions.csv';
         $file = fopen($fileName, 'r');
         $index = 0; // file line
         while ($index < 6) {
             $line = fgetcsv($file);
             if ($index > 0) { // skip header
                 $this->assertEquals([$line[1], $line[3], $line[2]],
-                    [$questionsCreated[$index-1]['title'], $questionsCreated[$index-1]['status'], $questionsCreated[$index-1]['promoted']]
+                    ['question'.$index, 'draft', 'true']
                 );
             }
             $index++;
@@ -77,36 +67,19 @@ class EntityToCsvTest extends WebTestCase
 
     public function testExportOnAnswers(): void
     {
-        $question1 = new Questions('Question 1', 'draft', false);
-
-        $this->entityManager->persist($question1);
-        $this->entityManager->flush();
-
-        $answer1 = new Answers($question1, 'channel1', 'body1');
-        $answer2 = new Answers($question1, 'channel2', 'body2');
-
-        $this->entityManager->persist($answer1);
-        $this->entityManager->persist($answer2);
-        $this->entityManager->flush();
-
-        $answersCreated = [
-            [],
-            ['channel' => 'channel1', 'body' => 'body1'],
-            ['channel' => 'channel2', 'body' => 'body2']
-        ];
-
+        $this->databaseTool->loadFixtures([AnswersFixtures::class]);
         $result = $this->exportService->formatContent(Answers::class, 'csv');
 
         $this->assertEquals($result['file'], 'Answers.csv');
 
-        $fileName = '/var/www/exportFiles/Answers.csv';
+        $fileName = self::PATH_LOCAL.'Answers.csv';
         $file = fopen($fileName, 'r');
         $index = 0; // file line
-        while ($index < 4) {
+        while ($index < 6) {
             $line = fgetcsv($file);
             if ($index > 0) { // skip header
                 $this->assertEquals([$line[1], $line[2]],
-                    [$answersCreated[$index]['channel'], $answersCreated[$index]['body']]
+                    ['faq', 'answer'.$index]
                 );
             }
             $index++;
@@ -117,35 +90,18 @@ class EntityToCsvTest extends WebTestCase
 
     public function testExportOnHistoricQuestions(): void
     {
-        $question1 = new Questions('Question 1', 'draft', false);
-
-        $this->entityManager->persist($question1);
-        $this->entityManager->flush();
-
-        $historicQuestion1 = new HistoricQuestion($question1, 'Historic Question 1', 'draft');
-        $historicQuestion2 = new HistoricQuestion($question1, 'Historic Question 2', 'published');
-
-        $this->entityManager->persist($historicQuestion1);
-        $this->entityManager->persist($historicQuestion2);
-        $this->entityManager->flush();
-
-        $historicQuestionsCreated = [
-            [],
-            ['title' => 'Historic Question 1', 'status' => 'draft'],
-            ['title' => 'Historic Question 2', 'status' => 'published']
-        ];
-
+        $this->databaseTool->loadFixtures([HistoricQuestionsFixtures::class]);
         $result = $this->exportService->formatContent(HistoricQuestion::class, 'csv');
 
         $this->assertEquals($result['file'], 'HistoricQuestion.csv');
 
-        $fileName = '/var/www/exportFiles/HistoricQuestion.csv';
+        $fileName = self::PATH_LOCAL.'HistoricQuestion.csv';
         $file = fopen($fileName, 'r');
         $index = 0; // file line
-        while ($index < 4) {
+        while ($index < 6) {
             $line = fgetcsv($file);
             if ($index > 0) { // skip header
-                $this->assertEquals([$line[1], $line[2]], [$historicQuestionsCreated[$index]['title'], $historicQuestionsCreated[$index]['status']]
+                $this->assertEquals([$line[1], $line[2]], ['question'.$index.'title', 'draft']
                 );
             }
             $index++;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\units\Api;
 
+use App\Services\ExportService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class QuestionTest extends WebTestCase

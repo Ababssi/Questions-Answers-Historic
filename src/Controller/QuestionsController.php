@@ -64,7 +64,7 @@ class QuestionsController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
         $form = $this->createForm((QuestionType::class));
-        $form->submit($data);
+        $form->submit($data, false);
         if (!$form->isValid()) {
             return self::returnJsonResponseErrors($form->getErrors(true, false));
         }

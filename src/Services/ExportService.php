@@ -11,6 +11,10 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final readonly class ExportService
 {
+    const PATH_DOCKER = '/var/www/exportFiles/';
+    const INDEX_DOCKER = 4;
+    const PATH_LOCAL = 'exportFiles/';
+    const INDEX_LOCAL = 1;
     private const QUANTITY = 3;
     public const AVAILABLE_FORMATS = ['csv', 'json', 'xml'];
     private string $currentFormat;
@@ -72,7 +76,7 @@ final readonly class ExportService
     private function ArrayContentToFile(array $arrayContent, string $className): string
     {
         $classFileName = explode('\\', $className)[2];
-        $fileName = '/var/www/exportFiles/'.$classFileName.'.'.$this->currentFormat;
+        $fileName = self::PATH_LOCAL.$classFileName.'.'.$this->currentFormat;
 
         $options = null;
         if ($this->currentFormat === 'csv'){
@@ -88,7 +92,7 @@ final readonly class ExportService
         }
 
         // file_put_contents($fileName, $contentFormatted);
-        return explode('/', $fileName)[4] ;
+        return explode('/', $fileName)[self::INDEX_LOCAL] ;
     }
 
     private function replaceBoolValueToString(array $arrayContent): array
