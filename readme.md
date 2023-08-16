@@ -1,4 +1,4 @@
-## Smart Tribune - Backend - Coding Test :
+## Backend - Coding Test :
 
 Ideally use PHP8 & Symfony6 (but otherwise Kotlin) and a relational database (mariadb/postgre).  
 **Unit Tests** are mandatory.  
@@ -78,10 +78,6 @@ Status value is restricted to "draft" or "published"
 4. GET /questions
 5. DELETE /questions/{id}
 
-#### Bonus generate csv file
-1. GET /historicQuestion/export
-2. GET /questions/export
-
 
 ### AnswerController
 
@@ -102,8 +98,6 @@ Status value is restricted to "draft" or "published"
 3. GET /answers/{id}
 4. DELETE /answers/{id}
 
-#### Bonus generate csv file
-1. GET /answers/export
 
 ## Spec : 
 1. php 8.2 symfony 6.3
